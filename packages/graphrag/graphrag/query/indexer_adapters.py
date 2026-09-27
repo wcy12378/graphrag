@@ -93,7 +93,11 @@ def read_indexer_reports(
         nodes_df.loc[:, "community"] = nodes_df["community"].fillna(-1)
         nodes_df.loc[:, "community"] = nodes_df["community"].astype(int)
 
-        nodes_df = nodes_df.groupby(["title"]).agg({"community": "max"}).reset_index()
+        # Roll up per *entity* (not per community title). Since v2.0.0
+        # `communities.title` is the literal "Community N" string, so grouping
+        # by it is an identity operation that keeps every community at the level
+        # instead of selecting each entity's max community level.
+        nodes_df = nodes_df.groupby(["entity_ids"]).agg({"community": "max"}).reset_index()
         filtered_community_df = nodes_df["community"].drop_duplicates()
 
         reports_df = reports_df.merge(
